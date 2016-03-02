@@ -2,7 +2,6 @@
 
 var routerApp = angular.module('routerApp', [
     'ui.router',
-    'Login.services',
     'ngAnimate',
     'ui.bootstrap',
     'ngCookies',
@@ -18,10 +17,15 @@ routerApp.config(function($stateProvider, $urlRouterProvider) {
             templateUrl: '../views/login.html',
             controller: 'loginCTRL',
         })
-        .state('homepage', {
-            url: '/#',
-            templateUrl: '../views/homepage.html',
-            controller: 'homepageCTRL',
+        .state('customer_care', {
+            url: '/customer-care',
+            templateUrl: '../views/customer_care.html',
+            controller: 'customer_careCTRL',
+        })
+        .state('finance', {
+            url: '/finance',
+            templateUrl: '../views/finance.html',
+            controller: 'financeCTRL',
         })
         .state('logout', {
             url: '/#',

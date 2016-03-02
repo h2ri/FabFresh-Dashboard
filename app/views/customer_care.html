@@ -1,4 +1,5 @@
 <div id="order">
+
   <div>
     <form   ng-submit="do()">
       <p style="width:200px;">From: <input type="date" id="date_from" ng-model="from"/></p>
@@ -29,7 +30,6 @@
         <label>All:{{data.all_count}}</label><br>
       </div>
   </div>
-
   <div id="orders_list">
     <div id="orders" ng-repeat="x in data  | filter: searchFilter |filter: searchFilter1 |filter: searchFilter2" >
       <div id="menu" ng-click="open(x)">

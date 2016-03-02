@@ -2,22 +2,19 @@
 
 
 routerApp
-  .controller('homepageCTRL', function( $cookies,$uibModal, $rootScope,$scope, $http) {
+  .controller('customer_careCTRL', function( $state,$cookies,$uibModal, $rootScope,$scope, $http,service) {
+    if(angular.isUndefined($cookies.get('token'))){
+        $state.go('login');
+        alert("Please login to continue");
+        return;
+      }
     $scope.user = [];
     $scope.nameFilter = null;
     $scope.ordersList = [];
-    var URL = 'http://fabfresh.elasticbeanstalk.com';
-    $http({
-      method  : 'GET',
-      url     : URL+'/order/live/',
-      headers : {'Authorization': 'Bearer '+$cookies.get('key')}
-     })
-      .success(function(data) {
-        if (data.errors) {
-          alert("Some error occured");
-        }
-        else {
-          
+
+    service.getLiveOrders()
+        .then(function(response){
+          var data=response;
           var type = {};
           type["0"] = "Wash";
           type["1"] = "Iron";
@@ -48,19 +45,17 @@ routerApp
               else if(data[i].status==11)
                 data.drop_count+=1;
               data.all_count+=1;
+              data[i].created_at_time= strToDate(data[i].created_at_time);
+              if(data[i].modified_at_time)
+                data[i].modified_at_time= strToDate(data[i].modified_at_time);
+              else
+                data[i].modified_at_time=data[i].created_at_time;
               data[i].reassign=update2[data[i].status]; 
               data[i].clr=colour[data[i].status];
               data[i].order_type=type[data[i].order_type];
               data[i].status=type1[data[i].status];
-              var str=data[i].created_at_time;
-              data[i].created_at_time=str.substring(11, 16)+", "+str.substring(8, 10)+'-'+ str.substring(5, 7) +'-'+str.substring(0, 4);
-              str=data[i].modified_at_time;
               if(!data[i].coupon)
                 data[i].coupon="NA";
-              if(!str)
-                data[i].modified_at_time=data[i].created_at_time;
-              else
-                data[i].modified_at_time=str.substring(11, 16)+", "+str.substring(8, 10)+'-'+ str.substring(5, 7) +'-'+str.substring(0, 4);
               if(data[i].afterDiscount==null)
                    data[i].afterDiscount=0;
               if(data[i].coupon==null)
@@ -72,10 +67,14 @@ routerApp
           data1.drop_count=data.drop_count;
           data1.all_count=data.all_count;
           $scope.data=data1;
-
-        }
-      });
-
+          
+        },function(error){
+            alert("Error getting orders");
+        });
+    
+        function strToDate(str) {
+          return new Date(str);
+        };
       function parseDate(str) {
         var input=str.split(',');
         var part = input[0].split(':');
@@ -86,17 +85,20 @@ routerApp
       $scope.nameFilter1=true;
       $scope.nameFilter2=true;
       $scope.nameFilter3=false;
+
       $scope.searchFilter = function (x) {
         var re = new RegExp($scope.nameFilter, 'i');
         return !$scope.nameFilter || re.test(x.id) ;
       };
 
     
-      $scope.from=parseDate("00:00, 01-01-2016");
+      $scope.from=new Date("01 01, 2016 00:00:00");
       $scope.to=new Date();
+      $scope.to.setDate($scope.to.getDate()+1);
       $scope.to.setHours('0');
       $scope.to.setMinutes('0');
       $scope.to.setSeconds('0');
+      
 
       $scope.searchFilter1 = function (x) {
         if( $scope.nameFilter3)
@@ -115,9 +117,8 @@ routerApp
       };
 
       $scope.searchFilter2 = function (x) {
-          var d=new Date();
-          d.setDate($scope.to.getDate()+1)
-           if( parseDate(x.created_at_time) >= $scope.from && parseDate(x.created_at_time) <= d)
+
+           if( x.created_at_time >= $scope.from && x.created_at_time <= $scope.to)
                return true;
            else
               return false;
@@ -129,17 +130,18 @@ routerApp
       
       
       $scope.getColor = function(str) {
-        //alert(str);
         var date=new Date();
-        var hours=parseInt(str.substring(0,2));
-        var minutes=parseInt(str.substring(3,5));
-        var year=parseInt(str.substring(7,11));
-        var month=parseInt(str.substring(12,14));
-        var day=parseInt(str.substring(15,17));
+        var hours=str.getHours();
+        var minutes=str.getMinutes();
+        var year=str.getFullYear();
+        var month=str.getMonth();
+        var day=str.getDay();
+        //console.log(day+" "+month+" "+year+", "+hours+":"+minutes);
+        //console.log(date.getDay()+" "+date.getMonth()+" "+date.getFullYear()+", "+date.getHours()+":"+date.getMinutes());
         var color="";
         if(year<date.getFullYear())
           color="red";
-        else if(month<date.getMonth()+1)
+        else if(month<date.getMonth())
           color="red";
         else if( day<date.getDay()){
           var dateHours=date.getHours()+24;
@@ -236,8 +238,6 @@ routerApp
 
 
 .controller('ModalInstanceCtrl1', function ($uibModal,$cookies,$state,$http,$scope,$uibModalInstance, x) {
-  $scope.data=x;
-  var URL = 'http://fabfresh.elasticbeanstalk.com';
   $scope.cancel_order = function (size) {
     var modalInstance1 = $uibModal.open({
         templateUrl: 'views/cancel_order.html',
@@ -286,29 +286,16 @@ routerApp
 
 
 
-.controller('ModalInstanceCtrl2', function ($cookies,$state,$http,$scope,$uibModalInstance, x) {
-  $scope.data=x;
-  var URL = 'http://fabfresh.elasticbeanstalk.com';
+.controller('ModalInstanceCtrl2', function ($cookies,$state,$http,$scope,$uibModalInstance, x,service) {
   $scope.ok = function () {
-    $scope.order = {
-        "status": "0",
-        "remark" : $scope.remarks
-    };
-    $http({
-      method  : 'PATCH',
-      url     : URL+'/orders/'+x.id+'/',
-      data    : $scope.order,
-      headers : {'Content-Type': 'application/json', 'Authorization': 'Bearer '+$cookies.get('key')}//$rootScope.access_token} } 
-     })
-      .success(function(data) {
-        if (data.errors) {
-          alert("Some error occured");
-        }
-        else {
+    service.cancelOrder(x.id,$scope.remarks)
+        .then(function(response){
           alert("Order is successfully cancelled.");
           $state.go($state.current, {}, {reload: true});
-        }
-      });
+          
+        },function(error){
+            alert("Some Error occured");
+        });
       $uibModalInstance.close("");
   };
 
@@ -319,28 +306,17 @@ routerApp
 
 
 
-.controller('ModalInstanceCtrl3', function ($cookies,$state,$http,$scope,$uibModalInstance, x) {
-  $scope.data=x;
-  var URL = 'http://fabfresh.elasticbeanstalk.com';
+.controller('ModalInstanceCtrl3', function ($cookies,$state,$http,$scope,$uibModalInstance, x,service) {
   $scope.ok = function () {
-    $scope.order = {
-        "status": x.change_to
-    };
-    $http({
-      method  : 'PATCH',
-      url     : URL+'/orders/'+x.id+'/',
-      data    : $scope.order,
-      headers : {'Content-Type': 'application/json', 'Authorization': 'Bearer '+$cookies.get('key')}//$rootScope.access_token} } 
-     })
-      .success(function(data) {
-        if (data.errors) {
-          alert("Some error occured");
-        }
-        else {
+
+    service.updateOrder(x.id,x.change_to)
+        .then(function(response){
           alert("Order status is changed to "+x.change_to_status+".");
           $state.go($state.current, {}, {reload: true});
-        }
-      });
+          
+        },function(error){
+            alert("Some Error occured");
+        });
       $uibModalInstance.close("");
   };
 
@@ -352,25 +328,15 @@ routerApp
 
 
 
-.controller('ModalInstanceCtrl4', function ($cookies,$state,$http,$scope,$uibModalInstance, x) {
-
-  $scope.data=x;
-  var URL = 'http://fabfresh.elasticbeanstalk.com';
+.controller('ModalInstanceCtrl4', function ($cookies,$state,$http,$scope,$uibModalInstance, x,service) {
   $scope.ok = function () {
-    $http({
-      method  : 'GET',
-      url     : URL+'/v1/reassign/'+x.id+x.chr+'/',
-      headers : {'Authorization': 'Bearer '+$cookies.get('key')}//$rootScope.access_token} } 
-     })
-      .success(function(data) {
-        if (data.errors) {
-          alert("Some error occured");
-        }
-        else {
+    service.reassign(x.id,x.chr)
+        .then(function(response){
           alert("Order is Reassigned.");
-          //$state.go($state.current, {}, {reload: true});
-        }
-      });
+          
+        },function(error){
+            alert("Some Error occured");
+        });
       $uibModalInstance.close("");
   };
 
