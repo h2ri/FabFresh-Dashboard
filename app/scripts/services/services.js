@@ -27,6 +27,25 @@ angular.module('routerApp')
    return deferOrder.promise
   };
 
+  service.getReport= function(min_date1,max_date1){
+    //console.log(min_date1);
+    //console.log(max_date1);
+    var deferOrder = $q.defer();
+     $http({
+      method  : 'GET',
+      url     : URL+'/v1/order/report/',
+      params : {min_date:min_date1,max_date:max_date1}
+     })
+    .success(function(response){
+        deferOrder.resolve(response);
+    })
+    .error(function(error,status){
+      deferOrder.reject(error);
+    })
+
+   return deferOrder.promise
+  };
+
   service.getOrderByStatus= function(status){
     var deferotp = $q.defer();
     $http({
@@ -50,7 +69,6 @@ angular.module('routerApp')
      $http({
       method  : 'GET',
       url     : URL+'/order/live/'
-      //headers : {'Authorization': 'Bearer '+$cookies.get('token')} 
      })
     .success(function(response){
         deferOrder.resolve(response);
@@ -86,7 +104,7 @@ angular.module('routerApp')
      $http({
       method  : 'GET',
       url     : URL+'/v1/order/finance/',
-      params : {min_date:min_date1,max_date:max_date1},
+      params : {min_date:min_date1,max_date:max_date1}
       //headers : {'Authorization': 'Bearer '+$cookies.get('token')} 
      })
     .success(function(response){
@@ -179,6 +197,82 @@ angular.module('routerApp')
 
     };
 
+    service.getClothInfo = function() {
+    var deferredType = $q.defer();
+    return $http({
+        url : URL + '/cloth/info/',
+        method : 'GET'
+    })
+      .then(function(response){
+        deferredType.resolve(response.data);
+                    return deferredType.promise;
+                },function(response){
+        deferredType.reject(response);
+                    return deferredType.promise;      
+      });
+  };
+
+    service.getClothType = function() {
+    var deferredType = $q.defer();
+    return $http({
+        url : URL + '/cloth/type/',
+        method : 'GET'
+    })
+      .then(function(response){
+        deferredType.resolve(response.data);
+                    return deferredType.promise;
+                },function(response){
+        deferredType.reject(response);
+                    return deferredType.promise;      
+      });
+  };
+
+
+  service.getClothBrand = function() {
+    var deferredBrand = $q.defer();
+    return $http({
+        url : URL + '/cloth/brand/',
+        method : 'GET'
+    })
+      .then(function(response){
+        deferredBrand.resolve(response.data);
+                    return deferredBrand.promise;
+                },function(response){
+        deferredBrand.reject(response);
+                    return deferredBrand.promise;      
+      });
+  };  
+
+  service.getClothColor = function() {
+    var deferredColor = $q.defer();
+    return $http({
+        url : URL + '/cloth/color/',
+        method : 'GET'
+    })
+      .then(function(response){
+        deferredColor.resolve(response.data);
+                    return deferredColor.promise;
+                },function(response){
+        deferredColor.reject(response);
+                    return deferredColor.promise;      
+      });
+  };
+
+  //For Size
+  service.getClothSize = function() {
+    var deferredSize = $q.defer();
+    return $http({
+        url : URL + '/cloth/size/',
+        method : 'GET'
+    })
+      .then(function(response){
+        deferredSize.resolve(response.data);
+                    return deferredSize.promise;
+                },function(response){
+        deferredSize.reject(response);
+                    return deferredSize.promise;      
+      });
+  };
 
 
 
@@ -188,29 +282,3 @@ angular.module('routerApp')
 
     return service;
  });
-
-
-
-// routerApp.factory('userService', ['$rootScope', function ($rootScope) {
-
-//     var service = {
-      
-//         model: {
-//             name: '',
-//             email: ''
-//         },
-
-//         SaveState: function () {
-//             sessionStorage.userService = angular.toJson(service.model);
-//         },
-
-//         RestoreState: function () {
-//             service.model = angular.fromJson(sessionStorage.userService);
-//         }
-//     }
-
-//     $rootScope.$on("savestate", service.SaveState);
-//     $rootScope.$on("restorestate", service.RestoreState);
-
-//     return service;
-// }]);

@@ -27,6 +27,16 @@ routerApp.config(function($stateProvider, $urlRouterProvider) {
             templateUrl: '../views/finance.html',
             controller: 'financeCTRL',
         })
+        .state('cloth_info', {
+            url: '/cloth-info',
+            templateUrl: '../views/cloth_info.html',
+            controller: 'cloth_infoCTRL',
+        })
+        .state('report', {
+            url: '/report',
+            templateUrl: '../views/report.html',
+            controller: 'reportCTRL',
+        })
         .state('logout', {
             url: '/#',
             //template: '<h1>BYE<h1>',

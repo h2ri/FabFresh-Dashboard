@@ -10,6 +10,9 @@ routerApp
       }
       $scope.from=new Date("01 24, 2016 00:00:00");
       $scope.to=new Date();
+      $scope.to.setHours("00");
+      $scope.to.setMinutes("00");
+      $scope.to.setSeconds("00");
       $scope.ordersList = [];
       $scope.to.setDate($scope.to.getDate()+1);
 

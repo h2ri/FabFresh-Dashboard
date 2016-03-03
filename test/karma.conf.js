@@ -34,6 +34,7 @@ module.exports = function(config) {
       'bower_components/angular-jquery-timepicker/src/timepickerdirective.js',
       'bower_components/bootstrap-ui-datetime-picker/dist/datetime-picker.min.js',
       'bower_components/material-design-lite/material.min.js',
+      'bower_components/Chart.js/Chart.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       "app/scripts/**/*.js",
