@@ -25,13 +25,13 @@
        
     </div>
     <div style="margin-top: 6px; margin-right:300px;float:right;">
-        <label>PickUp:{{data.pickup_count}}</label><br>
-        <label>Drop:{{data.drop_count}}</label><br>
-        <label>All:{{data.all_count}}</label><br>
+        <label>PickUp:{{customer_care_data.pickup_count}}</label><br>
+        <label>Drop:{{customer_care_data.drop_count}}</label><br>
+        <label>All:{{customer_care_data.all_count}}</label><br>
       </div>
   </div>
   <div id="orders_list">
-    <div id="orders" ng-repeat="x in data  | filter: searchFilter |filter: searchFilter1 |filter: searchFilter2" >
+    <div id="orders" ng-repeat="x in customer_care_data  | filter: searchFilter |filter: searchFilter1 |filter: searchFilter2" >
       <div id="menu" ng-click="open(x)">
         <div id="order_id" style="background-color: {{getColor(x.modified_at_time)}};">
           <h2  style="color:white;" >#{{x.id}}</h2>

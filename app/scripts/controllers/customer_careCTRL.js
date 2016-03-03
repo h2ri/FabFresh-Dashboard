@@ -15,25 +15,10 @@ routerApp
     service.getLiveOrders()
         .then(function(response){
           var data=response;
-          var type = {};
-          type["0"] = "Wash";
-          type["1"] = "Iron";
-          type["2"] = "Wash and Iron";
-
-          var type1 = {};
-          type1["1"] = "created";
-          type1["2"] = "pickup";
-          type1["11"] = "drop";
-
-
-          var update2 = {};
-          update2["1"] = "Reassign..?";
-          update2["11"] = "Reassign..?";
-
-          var colour = {};
-          colour["1"] = "#CADFBE";
-          colour["2"] = "#9FCCFF";
-          colour["11"] = "#6AB97F";
+          var type={"0":"Wash & Iron","1":"Wash & Fold","2":"Iron"};
+          var type1={"1":"created","2":"pickup","11":"drop"};
+          var update2={"1":"Reassign..?","11":"Reassign..?"};
+          var colour={"1":"#CADFBE","2":"#9FCCFF","11":"#6AB97F"};
 
           var data1=[];
           data.pickup_count=0;
@@ -45,9 +30,9 @@ routerApp
               else if(data[i].status==11)
                 data.drop_count+=1;
               data.all_count+=1;
-              data[i].created_at_time= strToDate(data[i].created_at_time);
+              data[i].created_at_time= new Date(data[i].created_at_time);
               if(data[i].modified_at_time)
-                data[i].modified_at_time= strToDate(data[i].modified_at_time);
+                data[i].modified_at_time= new Date(data[i].modified_at_time);
               else
                 data[i].modified_at_time=data[i].created_at_time;
               data[i].reassign=update2[data[i].status]; 
@@ -56,25 +41,23 @@ routerApp
               data[i].status=type1[data[i].status];
               if(!data[i].coupon)
                 data[i].coupon="NA";
-              if(data[i].afterDiscount==null)
-                   data[i].afterDiscount=0;
+              if(data[i].amount!=null && data[i].afterDiscount==null)
+                   data[i].afterDiscount=data[i].amount;
               if(data[i].coupon==null)
                 data[i].coupon="NA";
                 data1.push(data[i]);
           }
-          
+
           data1.pickup_count=data.pickup_count;
           data1.drop_count=data.drop_count;
           data1.all_count=data.all_count;
-          $scope.data=data1;
+          $rootScope.customer_care_data=data1;
           
         },function(error){
             alert("Error getting orders");
         });
-    
-        function strToDate(str) {
-          return new Date(str);
-        };
+
+
       function parseDate(str) {
         var input=str.split(',');
         var part = input[0].split(':');
@@ -91,7 +74,6 @@ routerApp
         return !$scope.nameFilter || re.test(x.id) ;
       };
 
-    
       $scope.from=new Date("01 01, 2016 00:00:00");
       $scope.to=new Date();
       $scope.to.setDate($scope.to.getDate()+1);
@@ -252,6 +234,7 @@ routerApp
     $uibModalInstance.close("");
   };
   $scope.update_order = function (size) {
+
     if(x.status=='created'){
       x.change_to='2';
       x.change_to_status='pickup';
@@ -286,12 +269,57 @@ routerApp
 
 
 
-.controller('ModalInstanceCtrl2', function ($cookies,$state,$http,$scope,$uibModalInstance, x,service) {
+.controller('ModalInstanceCtrl2', function ($rootScope,$cookies,$state,$http,$scope,$uibModalInstance, x,service) {
+  $scope.data=x;
   $scope.ok = function () {
     service.cancelOrder(x.id,$scope.remarks)
         .then(function(response){
           alert("Order is successfully cancelled.");
-          $state.go($state.current, {}, {reload: true});
+          service.getLiveOrders()
+        .then(function(response){
+          var data=response;
+          var type={"0":"Wash & Iron","1":"Wash & Fold","2":"Iron"};
+          var type1={"1":"created","2":"pickup","11":"drop"};
+          var update2={"1":"Reassign..?","11":"Reassign..?"};
+          var colour={"1":"#CADFBE","2":"#9FCCFF","11":"#6AB97F"};
+
+          var data1=[];
+          data.pickup_count=0;
+          data.drop_count=0;
+          data.all_count=0;
+          for(var i=0;i<data.length;i++){
+              if(data[i].status==2 || data[i].status==1)
+                data.pickup_count+=1;
+              else if(data[i].status==11)
+                data.drop_count+=1;
+              data.all_count+=1;
+              data[i].created_at_time= new Date(data[i].created_at_time);
+              if(data[i].modified_at_time)
+                data[i].modified_at_time= new Date(data[i].modified_at_time);
+              else
+                data[i].modified_at_time=data[i].created_at_time;
+              data[i].reassign=update2[data[i].status]; 
+              data[i].clr=colour[data[i].status];
+              data[i].order_type=type[data[i].order_type];
+              data[i].status=type1[data[i].status];
+              if(!data[i].coupon)
+                data[i].coupon="NA";
+              if(data[i].amount!=null && data[i].afterDiscount==null)
+                   data[i].afterDiscount=data[i].amount;
+              if(data[i].coupon==null)
+                data[i].coupon="NA";
+                data1.push(data[i]);
+          }
+          
+          data1.pickup_count=data.pickup_count;
+          data1.drop_count=data.drop_count;
+          data1.all_count=data.all_count;
+          $rootScope.customer_care_data=data1;
+
+          
+          },function(error){
+              alert("Error getting orders");
+          });
           
         },function(error){
             alert("Some Error occured");
@@ -306,13 +334,57 @@ routerApp
 
 
 
-.controller('ModalInstanceCtrl3', function ($cookies,$state,$http,$scope,$uibModalInstance, x,service) {
+.controller('ModalInstanceCtrl3', function ($rootScope,$cookies,$state,$http,$scope,$uibModalInstance, x,service) {
+  $scope.data=x;
   $scope.ok = function () {
-
     service.updateOrder(x.id,x.change_to)
         .then(function(response){
           alert("Order status is changed to "+x.change_to_status+".");
-          $state.go($state.current, {}, {reload: true});
+          service.getLiveOrders()
+        .then(function(response){
+          var data=response;
+          var type={"0":"Wash & Iron","1":"Wash & Fold","2":"Iron"};
+          var type1={"1":"created","2":"pickup","11":"drop"};
+          var update2={"1":"Reassign..?","11":"Reassign..?"};
+          var colour={"1":"#CADFBE","2":"#9FCCFF","11":"#6AB97F"};
+
+          var data1=[];
+          data.pickup_count=0;
+          data.drop_count=0;
+          data.all_count=0;
+          for(var i=0;i<data.length;i++){
+              if(data[i].status==2 || data[i].status==1)
+                data.pickup_count+=1;
+              else if(data[i].status==11)
+                data.drop_count+=1;
+              data.all_count+=1;
+              data[i].created_at_time= new Date(data[i].created_at_time);
+              if(data[i].modified_at_time)
+                data[i].modified_at_time= new Date(data[i].modified_at_time);
+              else
+                data[i].modified_at_time=data[i].created_at_time;
+              data[i].reassign=update2[data[i].status]; 
+              data[i].clr=colour[data[i].status];
+              data[i].order_type=type[data[i].order_type];
+              data[i].status=type1[data[i].status];
+              if(!data[i].coupon)
+                data[i].coupon="NA";
+              if(data[i].amount!=null && data[i].afterDiscount==null)
+                   data[i].afterDiscount=data[i].amount;
+              if(data[i].coupon==null)
+                data[i].coupon="NA";
+                data1.push(data[i]);
+          }
+          
+          data1.pickup_count=data.pickup_count;
+          data1.drop_count=data.drop_count;
+          data1.all_count=data.all_count;
+          $rootScope.customer_care_data=data1;
+
+          
+          },function(error){
+              alert("Error getting orders");
+          });
           
         },function(error){
             alert("Some Error occured");
