@@ -159,6 +159,7 @@ routerApp
         .then(function(response){
            $scope.arr = [];
            for(var j = 0; j < response.length; j++)
+            if(response[j].brand_name!="OTHERS")
              $scope.arr[j] = response[j].brand_name;
         },function(error){
             alert("Error Getting Cloth Brand");
